@@ -34,7 +34,7 @@ test('lever controls, challenge feedback, part inspection, and saved discoveries
   await openMachine(page, 'lever');
   await page.getByRole('button', { name: 'Test my setup' }).click();
   await expect(page.locator('.challenge-feedback')).toContainText('Try a fulcrum position of 25% or less');
-  await setSlider(page, 'pivot', 5); // 20%, 4× advantage
+  await setSlider(page, 'pivot', 3); // 20%, 4× advantage; minimum respects lift geometry
   await expect(page.locator('.measurement-grid > div').nth(0)).toContainText('24.5');
   await expect(page.locator('.measurement-grid > div').nth(2)).toContainText('4.0');
   await page.getByRole('button', { name: 'Test my setup' }).click();
@@ -57,9 +57,9 @@ test('pulley arrangement, friction, radius, and conditional parts work together'
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
   await openMachine(page, 'pulley');
-  await expect(page.locator('.measurement-grid > div').nth(0)).toContainText('98.1');
+  await expect(page.locator('.measurement-grid > div').nth(0)).toContainText('98.0');
   await page.getByRole('button', { name: 'Add a moving wheel' }).click();
-  await expect(page.locator('.measurement-grid > div').nth(0)).toContainText('49.1');
+  await expect(page.locator('.measurement-grid > div').nth(0)).toContainText('49.0');
   await expect(page.locator('.measurement-grid > div').nth(1)).toContainText('0.10');
   await page.getByRole('button', { name: 'moving wheel', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'The moving wheel', exact: true })).toBeVisible();
@@ -132,7 +132,7 @@ test('mobile library and both labs stay within the viewport', async ({ page }) =
   await page.getByRole('button', { name: 'Try the pulley' }).click();
   await page.getByRole('button', { name: 'Controls', exact: true }).click();
   await page.getByRole('button', { name: 'Add a moving wheel' }).click();
-  await expect(page.locator('.measurement-grid > div').nth(0)).toContainText('49.1');
+  await expect(page.locator('.measurement-grid > div').nth(0)).toContainText('49.0');
   await page.getByRole('button', { name: 'Pause simulation' }).click();
   await page.screenshot({ path: '.verification/pulley-mobile.png', fullPage: true });
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
@@ -142,7 +142,7 @@ test('canvas controls collapse without losing settings and part links reopen the
   await openMachine(page, 'lever');
   const toggle = page.locator('.canvas-controls-toggle');
   const canvas = page.locator('canvas');
-  await setSlider(page, 'pivot', 5);
+  await setSlider(page, 'pivot', 3);
   await page.getByRole('button', { name: 'Pause simulation' }).click();
   const openWidth = (await canvas.boundingBox())!.width;
   await toggle.click();
@@ -207,4 +207,46 @@ test('no remote assets are required and blocked local storage is tolerated', asy
   await page.getByRole('button', { name: 'Try the pulley' }).click();
   await expect(page.locator('canvas')).toBeVisible();
   expect(externalRequests).toEqual([]);
+});
+
+test('exact lever problem changes geometry and solves effort, distance, and work', async ({ page }) => {
+  await openMachine(page, 'lever');
+  await page.getByText('Exact problem parameters', { exact: true }).click();
+  async function exact(id: string, value: string) { await page.locator(`#${id}`).fill(value); await page.locator(`#${id}`).press('Enter'); }
+  await exact('mass-exact', '12');
+  await exact('lift-distance', '0.1');
+  await exact('load-arm', '0.5');
+  await exact('effort-arm', '1.5');
+  await expect(page.locator('.measurement-grid > div').nth(0)).toContainText('39.2');
+  await expect(page.locator('.stroke-measurements')).toContainText('Input travel 0.30 m');
+  await expect(page.locator('.stroke-measurements')).toContainText('Useful work 11.76 J');
+  await expect(page.locator('.measurements-top')).toContainText('g = 9.8');
+  await exact('lift-distance', '0.5');
+  await expect(page.locator('.configuration-error')).toContainText('at most');
+  await expect(page.locator('.stroke-measurements')).toContainText('Lift 0.10 m');
+  await exact('lift-distance', '0.1');
+  await expect(page.locator('.configuration-error')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Pause simulation' }).click();
+  await page.screenshot({ path: '.verification/phase-one-lever.png', fullPage: true });
+});
+
+test('weight entry, variable gravity, and efficiency stay consistent', async ({ page }) => {
+  await openMachine(page, 'pulley');
+  await page.getByRole('button', { name: 'Weight · N', exact: true }).click();
+  await page.locator('#weight').fill('100');
+  await page.locator('#weight').press('Enter');
+  await page.getByRole('button', { name: 'Add a moving wheel' }).click();
+  await page.getByText('Exact problem parameters', { exact: true }).click();
+  await page.locator('#gravity').fill('1.62');
+  await page.locator('#gravity').press('Enter');
+  await expect(page.locator('.measurement-grid > div').nth(0)).toContainText('50.0');
+  await page.locator('#efficiency').fill('50');
+  await page.locator('#efficiency').press('Enter');
+  await expect(page.locator('.measurement-grid > div').nth(0)).toContainText('100.0');
+  await page.locator('#lift-distance').fill('2');
+  await page.locator('#lift-distance').press('Enter');
+  await expect(page.locator('.stroke-measurements')).toContainText('Input travel 4.00 m');
+  await expect(page.locator('.stroke-measurements')).toContainText('Useful work 200.00 J');
+  await page.getByRole('button', { name: 'Pause simulation' }).click();
+  await page.screenshot({ path: '.verification/phase-one-pulley.png', fullPage: true });
 });

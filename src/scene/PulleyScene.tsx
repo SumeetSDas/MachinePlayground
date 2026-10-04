@@ -4,7 +4,7 @@ import { useFrame } from '@react-three/fiber';
 import { CatmullRomCurve3, Vector3 } from 'three';
 import type { Group, Mesh } from 'three';
 import { useLab } from '../store';
-import { calculate } from '../physics';
+import { calculate, pulleyGeometry, pulleyMotion } from '../physics';
 import { Bolt, SelectablePart, Solid } from './SelectablePart';
 import type { PartId } from '../machines';
 import SceneLabel from './SceneLabel';
@@ -44,25 +44,24 @@ export default function PulleyScene() {
   const result = calculate('pulley', settings);
   const radius = settings.radius;
   const fixedX = 0.65;
-  const fixedY = 2.95;
+  const geometry = pulleyGeometry(settings);
+  const fixedY = geometry.fixedY;
   const loadX = settings.segments === 2 ? fixedX - radius * 2 : fixedX - radius;
 
   useFrame((_, delta) => {
     const state = useLab.getState();
     if (lastReset.current !== state.resetKey) { elapsed.current = 0; lastReset.current = state.resetKey; }
-    if (state.running) elapsed.current = (elapsed.current + Math.min(delta, 0.05) * result.loadSpeed / 0.65) % 2;
+    if (state.running) elapsed.current = (elapsed.current + Math.min(delta, 0.05) / result.liftTime) % 2;
     const fraction = elapsed.current <= 1 ? elapsed.current : 2 - elapsed.current;
-    const lift = fraction * 0.65;
-    const loadY = 1.05 + lift;
-    const handleY = 2.35 - lift * settings.segments;
+    const { loadY, handleY, fixedAngle, movingAngle } = pulleyMotion(settings, fraction);
     if (loadGroup.current) loadGroup.current.position.set(loadX, loadY, 0);
     if (handleGroup.current) handleGroup.current.position.set(fixedX + radius, handleY, 0.04);
-    if (fixedWheel.current) fixedWheel.current.rotation.z = -lift * settings.segments / radius;
-    if (movingWheel.current) movingWheel.current.rotation.z = lift / radius;
+    if (fixedWheel.current) fixedWheel.current.rotation.z = fixedAngle;
+    if (movingWheel.current) movingWheel.current.rotation.z = movingAngle;
     const vertical = (mesh: Mesh | null, x: number, bottom: number, top: number) => {
       if (mesh) { mesh.position.set(x, (top + bottom) / 2, 0.04); mesh.scale.y = top - bottom; }
     };
-    vertical(leftRope.current, settings.segments === 2 ? loadX - radius : loadX, loadY, settings.segments === 2 ? 3.5 : fixedY);
+    vertical(leftRope.current, settings.segments === 2 ? loadX - radius : loadX, loadY, settings.segments === 2 ? geometry.frameHeight - 0.07 : fixedY);
     vertical(middleRope.current, fixedX - radius, loadY, fixedY);
     vertical(rightRope.current, fixedX + radius, handleY, fixedY);
   });
@@ -70,13 +69,13 @@ export default function PulleyScene() {
   return <group position={[0, 0.06, 0]}>
     <group position={[-1.05, 0, -0.15]}>
       <SelectablePart id="frame">
-      <Solid color="#35635b" position={[0, 1.78, 0]}><boxGeometry args={[0.18, 3.55, 0.2]} /></Solid>
-      <Solid color="#35635b" position={[1.02, 3.48, 0]}><boxGeometry args={[2.25, 0.2, 0.24]} /></Solid>
+      <Solid color="#35635b" position={[0, geometry.frameHeight / 2, 0]}><boxGeometry args={[0.18, geometry.frameHeight, 0.2]} /></Solid>
+      <Solid color="#35635b" position={[1.02, geometry.frameHeight - 0.07, 0]}><boxGeometry args={[2.25, 0.2, 0.24]} /></Solid>
       <Solid color="#203d3b" position={[0, 0.08, 0]}><boxGeometry args={[0.85, 0.15, 0.7]} /></Solid>
       </SelectablePart>
-      <Bolt position={[0, 3.48, 0.16]} /><Bolt position={[-0.26, 0.08, 0.37]} /><Bolt position={[0.26, 0.08, 0.37]} />
+      <Bolt position={[0, geometry.frameHeight - 0.07, 0.16]} /><Bolt position={[-0.26, 0.08, 0.37]} /><Bolt position={[0.26, 0.08, 0.37]} />
     </group>
-    <SelectablePart id="axle"><Solid color="#203d3b" position={[fixedX, 3.29, -0.13]}><boxGeometry args={[0.12, 0.42, 0.12]} /></Solid></SelectablePart>
+    <SelectablePart id="axle"><Solid color="#203d3b" position={[fixedX, (geometry.frameHeight + fixedY) / 2, -0.13]}><boxGeometry args={[0.12, geometry.frameHeight - fixedY, 0.12]} /></Solid></SelectablePart>
     <group position={[fixedX, fixedY, 0]}><Wheel radius={radius} wheelRef={fixedWheel} id="wheel" /><SelectablePart id="rope"><RopeArc radius={radius} /></SelectablePart></group>
     <SelectablePart id="rope">
       <Solid ref={leftRope} color="#ad966d"><cylinderGeometry args={[0.025, 0.025, 1, 8]} /></Solid>
@@ -92,10 +91,10 @@ export default function PulleyScene() {
       <SelectablePart id="load" position={[0, settings.segments === 2 ? -radius - 0.44 : -0.44, 0]}>
         <Solid color="#ce7d63"><boxGeometry args={[0.55, 0.48, 0.45]} /></Solid>
         <Solid color="#d9947c" position={[0, 0.245, 0]}><boxGeometry args={[0.55, 0.025, 0.45]} /></Solid>
-        <SceneLabel position={[0, 0, 0.235]} lines={[`${settings.mass} kg`]} width={0.45} color="#503d24" />
+        <SceneLabel position={[0, 0, 0.235]} lines={[`${Number(settings.mass.toFixed(2))} kg`]} width={0.45} color="#503d24" />
       </SelectablePart>
     </group>
     <group ref={handleGroup}><SelectablePart id="effort"><Solid color="#203d3b"><boxGeometry args={[0.24, 0.09, 0.12]} /></Solid><Solid color="#35655b" position={[0.23, -0.11, 0]} rotation={[Math.PI, 0, 0]}><coneGeometry args={[0.07, 0.13, 12]} /></Solid></SelectablePart></group>
-    <SceneLabel position={[-1.55, 2.75, 0]} lines={[`${settings.segments} SUPPORTING`, settings.segments === 1 ? 'ROPE SECTION' : 'ROPE SECTIONS']} width={1.15} />
+    <SceneLabel position={[-1.55, fixedY - 0.2, 0]} lines={[`${settings.segments} SUPPORTING`, settings.segments === 1 ? 'ROPE SECTION' : 'ROPE SECTIONS']} width={1.15} />
   </group>;
 }

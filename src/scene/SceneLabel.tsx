@@ -14,6 +14,11 @@ export default function SceneLabel({ lines, position, width = 0.8, color = '#3b5
     context.fillStyle = color;
     content.split('\n').forEach((line, index) => {
       context.font = lines.length === 1 ? '600 96px sans-serif' : index === 0 ? '500 40px sans-serif' : '600 48px sans-serif';
+      const measured = context.measureText(line).width;
+      if (measured > 476) {
+        const size = (lines.length === 1 ? 96 : index === 0 ? 40 : 48) * 476 / measured;
+        context.font = `600 ${size}px sans-serif`;
+      }
       context.fillText(line, 256, lines.length === 1 ? 56 : 66 + index * 89);
     });
     const label = new CanvasTexture(canvas);

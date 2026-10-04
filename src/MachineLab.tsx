@@ -72,7 +72,7 @@ export default function MachineLab({ machineId }: { machineId: MachineId }) {
       <div className="lab-discoveries">
         <div>
           <ChallengePanel machine={machineId} />
-          <p className="model-note">A simplified model for exploring: rigid parts, constant lifting speed, and massless rope. The animation lifts, then returns to repeat; measurements describe the lifting stroke. Friction uses a fixed 80% efficiency.</p>
+          <p className="model-note">A simplified model: rigid parts, vertical effort and load forces, massless rope, and constant vertical lifting speed. The animation lifts through the chosen distance, then returns; measurements describe the lift. Gravity and efficiency are configurable. This model does not simulate acceleration from an applied force.</p>
         </div>
         <aside><PartSidecar machine={machine} onChangePart={focusControl} /></aside>
       </div>

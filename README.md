@@ -26,7 +26,7 @@ npm run preview
 
 - Two illustrated machine cards and responsive workshop interfaces.
 - Procedural React Three Fiber models; no downloaded models, textures, or images.
-- Adjustable load, input speed, fulcrum position, pulley arrangement, wheel radius, and friction.
+- Adjustable mass or weight, input speed, fulcrum position, exact lever arms, pulley arrangement, wheel radius, lift distance, gravity, and efficiency.
 - A collapsible control panel inside the 3D workshop. It opens beside the machine on desktop and as a scrollable tray on mobile; collapsing it preserves the experiment. Part inspector links reopen the panel and focus the relevant setting.
 - Selectable and highlighted parts with a sidecar inspector. A DOM part picker supports keyboard and touch interaction.
 - Orbit and zoom, pause/play, reset (including camera), and fullscreen where supported.
@@ -37,13 +37,17 @@ Space pauses/resumes when focus is outside a control. Escape clears part selecti
 
 ## Physics and limitations
 
-These are quasi-static educational models, not rigid-body simulations. Parts and rope are massless; rope does not stretch. Speed is the input along the lifting stroke. The animation lifts then returns to demonstrate repeated operation; measurements always describe the lifting stroke, rather than claiming power during the reset stroke.
+These are quasi-static educational models, not rigid-body simulations. Parts and rope are massless; rope does not stretch. Lever forces and input speed refer to the vertical direction. The animation lifts then returns to demonstrate repeated operation; measurements always describe the lifting stroke, rather than claiming power during the reset stroke. Gravity defaults to 9.8 m/s² and can be changed in “Exact problem parameters.”
 
-For the lever, `MA = effort arm / load arm`. Fulcrum position is measured from the load end of a 3.6 m beam. Required effort is `mass × 9.81 / MA` and load speed is `input speed / MA`. The displayed angular motion derives from input displacement, so both ends obey the arm-length ratio.
+For the lever, `MA = effort arm / load arm`. Beam length is the sum of configurable arm lengths (3.6 m by default). Required effort is `mass × gravity / MA` and load speed is `input speed / MA`. The displayed angle is derived from lift distance, so vertical displacement at both ends obeys the arm-length ratio. The model supports strokes up to 0.35 rad (~20°); impossible lifts are rejected with an explanation.
 
 For the pulley, `MA = supporting rope sections`: one for a fixed pulley, two with a moving pulley. Load speed is rope speed divided by MA. Rope endpoint movement preserves the rope length in both arrangements. Wheel radius changes angular speed, not mechanical advantage.
 
-Friction uses a fixed efficiency of 80%: `effort = weight / (MA × efficiency)`. Input power is effort × input speed; useful output power is weight × load speed. Force and power are calculated, not independent controls. Mounting bolts are inspect-only fasteners.
+Friction defaults to 80% efficiency and can be changed: `effort = weight / (MA × efficiency)`. Input power is effort × input speed; useful output power is weight × load speed. Work is force × distance; input travel is load lift × MA. Lift time is lift distance / load speed. Force and power are calculated, not independent controls. Mounting bolts are inspect-only fasteners.
+
+Mass (kg) and weight (N) are explicitly distinct. In mass mode, changing gravity preserves mass; in weight mode it preserves the entered force and recalculates mass. SI conversion and validated atomic configuration application are available in `src/experiment.ts` and `src/store.ts`. Invalid parameters never partially modify an experiment or silently clamp its values.
+
+The proposed problem-to-scene agent workflow is documented in `docs/agent-workflow.md`. Phase one supplies its physics foundation; the text input and model endpoint have not been implemented.
 
 ## Architecture and expansion
 

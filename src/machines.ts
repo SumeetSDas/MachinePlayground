@@ -3,7 +3,12 @@ export type PartId = 'beam' | 'fulcrum' | 'load' | 'effort' | 'wheel' | 'movable
 
 export interface Settings {
   mass: number;
-  pivot: number;
+  loadInput: 'mass' | 'weight';
+  gravity: number;
+  loadArm: number;
+  effortArm: number;
+  liftDistance: number;
+  efficiency: number;
   speed: number;
   segments: 1 | 2;
   friction: boolean;
@@ -64,8 +69,8 @@ export const machines: Machine[] = [
 ];
 
 export const defaults: Record<MachineId, Settings> = {
-  lever: { mass: 10, pivot: 28, speed: 0.2, segments: 1, friction: false, radius: 0.32 },
-  pulley: { mass: 10, pivot: 28, speed: 0.2, segments: 1, friction: false, radius: 0.32 },
+  lever: { mass: 10, loadInput: 'mass', gravity: 9.8, loadArm: 1.008, effortArm: 2.592, liftDistance: 0.2, efficiency: 0.8, speed: 0.2, segments: 1, friction: false, radius: 0.32 },
+  pulley: { mass: 10, loadInput: 'mass', gravity: 9.8, loadArm: 1.008, effortArm: 2.592, liftDistance: 0.65, efficiency: 0.8, speed: 0.2, segments: 1, friction: false, radius: 0.32 },
 };
 
 export function availableParts(machine: Machine, settings: Settings) {
