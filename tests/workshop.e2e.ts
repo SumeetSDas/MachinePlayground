@@ -13,7 +13,9 @@ async function openMachine(page: Page, machine: 'lever' | 'pulley') {
   await page.goto('/');
   await page.locator(`.machine-card.${machine}`).click();
   await expect(page.locator('canvas')).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Make it your experiment' })).toBeVisible();
+  const toggle = page.locator('.canvas-controls-toggle');
+  if (await toggle.getAttribute('aria-expanded') === 'false') await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
 }
 
 function pixelDifference(a: Buffer, b: Buffer) {
@@ -97,8 +99,16 @@ test('canvas contains the machine, animates, and freezes when paused', async ({ 
     if ((r > g * 1.15 && r > b * 1.2) || (g > r * 1.12 && g > b * 0.9 && g < 150)) colored++;
   }
   expect(colored).toBeGreaterThan(1000);
-  // The fulcrum stays still, so this click is independent of animation timing.
-  await canvas.click({ position: { x: 415, y: 310 } });
+  // Select an actual green fulcrum pixel, independent of responsive framing.
+  const greenPixels: { x: number; y: number }[] = [];
+  for (let i = 0; i < png.data.length; i += 4) {
+    const [r, g, b] = [png.data[i], png.data[i + 1], png.data[i + 2]];
+    if (g > r * 1.25 && g > b * 1.02 && r < 120) greenPixels.push({ x: (i / 4) % png.width, y: Math.floor(i / 4 / png.width) });
+  }
+  expect(greenPixels.length).toBeGreaterThan(100);
+  const pixel = greenPixels[Math.floor(greenPixels.length * 0.6)];
+  const bounds = await canvas.boundingBox();
+  await canvas.click({ position: { x: pixel.x / png.width * bounds!.width, y: pixel.y / png.height * bounds!.height } });
   await expect(page.locator('.part-details')).toBeVisible();
   await page.screenshot({ path: '.verification/lever-desktop.png', fullPage: true });
   await page.locator('h1').click();
@@ -120,10 +130,69 @@ test('mobile library and both labs stay within the viewport', async ({ page }) =
   await page.screenshot({ path: '.verification/lever-mobile.png', fullPage: true });
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
   await page.getByRole('button', { name: 'Try the pulley' }).click();
+  await page.getByRole('button', { name: 'Controls', exact: true }).click();
   await page.getByRole('button', { name: 'Add a moving wheel' }).click();
   await expect(page.locator('.measurement-grid > div').nth(0)).toContainText('49.1');
   await page.getByRole('button', { name: 'Pause simulation' }).click();
   await page.screenshot({ path: '.verification/pulley-mobile.png', fullPage: true });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+});
+
+test('canvas controls collapse without losing settings and part links reopen them', async ({ page }) => {
+  await openMachine(page, 'lever');
+  const toggle = page.locator('.canvas-controls-toggle');
+  const canvas = page.locator('canvas');
+  await setSlider(page, 'pivot', 5);
+  await page.getByRole('button', { name: 'Pause simulation' }).click();
+  const openWidth = (await canvas.boundingBox())!.width;
+  await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  await expect(page.locator('#pivot')).toBeHidden();
+  await expect.poll(async () => (await canvas.boundingBox())!.width).toBeGreaterThan(openWidth);
+  await expect(page.getByRole('button', { name: 'Play simulation' })).toBeVisible();
+  await page.getByRole('button', { name: 'fulcrum', exact: true }).click();
+  await page.getByRole('button', { name: 'Try changing it' }).click();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  await expect(page.locator('#pivot')).toBeFocused();
+  await expect(page.locator('#pivot')).toHaveValue('20');
+  await expect(page.locator('.scene-stage #pivot')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Play simulation' })).toBeVisible();
+  await toggle.focus();
+  await toggle.press('Enter');
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  await toggle.press('Space');
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+});
+
+test('mobile controls are tucked away and the open tray leaves the machine visible', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  await page.locator('.machine-card.pulley').click();
+  const toggle = page.locator('.canvas-controls-toggle');
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  await expect(page.locator('#mass')).toBeHidden();
+  await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  await expect.poll(async () => (await page.locator('canvas').boundingBox())!.height).toBeGreaterThan(250);
+  const canvas = (await page.locator('canvas').boundingBox())!;
+  const panel = (await page.locator('.canvas-controls').boundingBox())!;
+  expect(canvas.height).toBeGreaterThan(250);
+  expect(canvas.y + canvas.height).toBeLessThanOrEqual(panel.y + 10);
+  await page.getByRole('button', { name: 'Add a moving wheel' }).click();
+  await page.getByRole('switch', { name: 'Add a little friction' }).click();
+  await expect(page.locator('.measurement-grid > div').nth(0)).toContainText('61.3');
+  await toggle.click();
+  await expect(page.locator('#friction')).toBeHidden();
+  await page.getByRole('button', { name: 'axle', exact: true }).click();
+  await page.getByRole('button', { name: 'Try changing it' }).click();
+  await expect(page.locator('#friction')).toBeFocused();
+  await expect(page.locator('#friction')).toBeVisible();
+  await expect(page.locator('#friction')).toHaveAttribute('aria-checked', 'true');
+  const focusedCanvas = (await page.locator('canvas').boundingBox())!;
+  expect(focusedCanvas.y).toBeGreaterThanOrEqual(0);
+  expect(focusedCanvas.y + focusedCanvas.height).toBeLessThan(844);
+  await expect(page.locator('.canvas-controls')).toBeInViewport();
+  await page.screenshot({ path: '.verification/canvas-controls-mobile-focused.png', fullPage: true });
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
 });
 

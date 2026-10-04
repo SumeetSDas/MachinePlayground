@@ -13,12 +13,12 @@ function Slider({ id, label, value, min, max, step = 1, unit, display, descripti
   </div>;
 }
 
-export default function ExperimentControls({ machine }: { machine: MachineId }) {
+export default function ExperimentControls({ machine, embedded = false }: { machine: MachineId; embedded?: boolean }) {
   const settings = useLab(s => s.settings[machine]);
   const update = useLab(s => s.update);
   const result = calculate(machine, settings);
-  return <section className="experiment-controls" aria-labelledby="controls-heading">
-    <div className="panel-heading"><SlidersHorizontal size={17} /><h2 id="controls-heading">Make it your experiment</h2></div>
+  return <section className="experiment-controls" aria-labelledby={embedded ? 'canvas-controls-toggle' : 'controls-heading'}>
+    {!embedded && <div className="panel-heading"><SlidersHorizontal size={17} /><h2 id="controls-heading">Make it your experiment</h2></div>}
     <Slider id="mass" label="Load weight" value={settings.mass} min={1} max={30} unit=" kg" description="How heavy is the thing we’re lifting?" onChange={mass => update(machine, { mass })} />
     {machine === 'lever' ? <Slider id="pivot" label="Fulcrum position" value={settings.pivot} min={15} max={75} unit="%" description="Measured from the load end. Try moving it closer to the load." onChange={pivot => update(machine, { pivot })} /> : <div className="arrangement-control">
       <label className="standalone-label">Pulley arrangement</label>

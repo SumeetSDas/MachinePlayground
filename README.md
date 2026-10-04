@@ -27,6 +27,7 @@ npm run preview
 - Two illustrated machine cards and responsive workshop interfaces.
 - Procedural React Three Fiber models; no downloaded models, textures, or images.
 - Adjustable load, input speed, fulcrum position, pulley arrangement, wheel radius, and friction.
+- A collapsible control panel inside the 3D workshop. It opens beside the machine on desktop and as a scrollable tray on mobile; collapsing it preserves the experiment. Part inspector links reopen the panel and focus the relevant setting.
 - Selectable and highlighted parts with a sidecar inspector. A DOM part picker supports keyboard and touch interaction.
 - Orbit and zoom, pause/play, reset (including camera), and fullscreen where supported.
 - Three experiments per machine, with feedback and progress saved locally. Storage failures are handled.
