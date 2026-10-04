@@ -6,6 +6,8 @@ Phase one is implemented locally: configurable gravity (9.8 m/s² by default), l
 
 The text input, server endpoint, language-model interpreter, clarification conversation, answer-reveal UI, follow-up history, and undo are planned. No model call, API credential, or server is present in this phase. The visualization distinguishes the implemented foundation from the proposed agent roles.
 
+Open the [interactive architecture diagram](../.archify/architecture-agent-setup-20261004-141949/agent-setup.html). Its [handoff record](../.archify/architecture-agent-setup-20261004-141949/handoff.json) links the frozen specification, artifact hashes, and verification evidence.
+
 ## Intended user journey
 
 Enter a lever or pulley word problem in a text box above the canvas. The proposed endpoint sends the problem and minimal current experiment context to a language model. The model returns structured quantities and units, the requested unknown, and explicit assumptions; it never returns code or arbitrary mesh instructions.

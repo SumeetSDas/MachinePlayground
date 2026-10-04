@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "architecture",
+  "quality": "showcase",
+  "specification": {
+    "path": "/Users/sumeetsouravdas/AI/MachinePlayground/.archify/architecture-agent-setup-20261004-141949/candidate.json",
+    "sha256": "6bbbc45dcd3d4f3ec575cdbe07948cf582a280d075f09243c6df65fee95369fa",
+    "bytes": 6118
+  },
+  "artifact": {
+    "path": "/Users/sumeetsouravdas/AI/MachinePlayground/.archify/architecture-agent-setup-20261004-141949/agent-setup.html",
+    "sha256": "4516ee755435bfc90bfb6532f288979fc536f19a8e6a649274c648046abe146d",
+    "bytes": 765980
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "/Users/sumeetsouravdas/AI/MachinePlayground/.archify/architecture-agent-setup-20261004-141949/review-1/agent-setup.finalize.json",
+    "summaryReceipt": "/Users/sumeetsouravdas/AI/MachinePlayground/.archify/architecture-agent-setup-20261004-141949/review-1/agent-setup.finalize-summary.json",
+    "browserCheckReceipt": "/Users/sumeetsouravdas/AI/MachinePlayground/.archify/architecture-agent-setup-20261004-141949/review-1/agent-setup.browser-check.json"
+  },
+  "visualReview": "not-requested",
+  "durationMs": 1186,
+  "visualReviewRecommendation": {
+    "action": "inspect-route-readability",
+    "signals": {
+      "routesOverSuggestedBends": 2
+    },
+    "reason": "Automated gates passed, but crossings or detours still need perceptual review before claiming visual quality.",
+    "affectedRoutes": {
+      "crossings": [],
+      "detours": [
+        {
+          "relationship": {
+            "id": "clarify-invalid",
+            "from": "typed-validator",
+            "to": "problem-ui",
+            "label": "Missing / conflicting: ask user",
+            "collectionIndex": 7,
+            "artifactIndex": 8
+          },
+          "bends": 3,
+          "stretch": 1.109
+        },
+        {
+          "relationship": {
+            "id": "request-failed",
+            "from": "request-endpoint",
+            "to": "problem-ui",
+            "label": "Failure: keep scene",
+            "collectionIndex": 8,
+            "artifactIndex": 9
+          },
+          "bends": 3,
+          "stretch": 1.13
+        }
+      ],
+      "truncated": false
+    },
+    "hints": [
+      "typed-validator → problem-ui needs 3 bends: move node typed-validator or problem-ui so they share a row or column with matching centers, or sit diagonally with a clear corner.",
+      "request-endpoint → problem-ui needs 3 bends: move node request-endpoint or problem-ui so they share a row or column with matching centers, or sit diagonally with a clear corner."
+    ],
+    "repair": "Trace these relationships at the desktop viewport. For Architecture, use references/architecture-layout-repair.md: reflow a blocked main path or tangled connected scene, and repair an isolated defect locally only when the surrounding composition is accepted. Preserve all semantic content and user-fixed geometry. Rerun finalize once after the edit."
+  }
+}

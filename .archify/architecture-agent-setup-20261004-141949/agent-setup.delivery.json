@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "be18d463-7ea8-4613-b715-14ae46473e19",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "/Users/sumeetsouravdas/AI/MachinePlayground/.archify/architecture-agent-setup-20261004-141949/candidate.json",
+  "output": "/Users/sumeetsouravdas/AI/MachinePlayground/.archify/architecture-agent-setup-20261004-141949/agent-setup.html",
+  "specification": {
+    "sha256": "6bbbc45dcd3d4f3ec575cdbe07948cf582a280d075f09243c6df65fee95369fa",
+    "bytes": 6118
+  },
+  "artifact": {
+    "sha256": "4516ee755435bfc90bfb6532f288979fc536f19a8e6a649274c648046abe146d",
+    "bytes": 765980
+  }
+}

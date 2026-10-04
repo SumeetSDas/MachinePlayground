@@ -1,0 +1,7 @@
+*
+!.gitignore
+!candidate.json
+!agent-setup.html
+!agent-setup.delivery.json
+!handoff.json
+!review-1/

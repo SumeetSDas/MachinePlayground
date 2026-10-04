@@ -1,0 +1,5 @@
+*
+!.gitignore
+!agent-setup.finalize.json
+!agent-setup.finalize-summary.json
+!agent-setup.browser-check.json

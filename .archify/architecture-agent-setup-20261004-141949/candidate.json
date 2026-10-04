@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Machine Playground: problem-to-scene agent setup",
+    "locale": "en",
+    "output": ".archify/architecture-agent-setup-20261004-141949/agent-setup.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/SumeetSDas/MachinePlayground",
+      "provider": "github",
+      "link_mode": "local-only",
+      "revision": "672cb9d3a9031978719c909eeb8e7aa52b3f792b"
+    }
+  },
+  "components": [
+    {
+      "id": "problem-ui", "type": "frontend", "label": "Problem input + clarification",
+      "sublabel": "PLANNED · Text, examples, givens and errors", "tag": "PLANNED",
+      "pos": [40, 70], "size": [270, 100],
+      "sources": [{ "path": "docs/agent-workflow.md", "line": 17, "label": "Planned input and clarification UI" }]
+    },
+    {
+      "id": "request-endpoint", "type": "backend", "label": "Bounded request endpoint",
+      "sublabel": "PLANNED · Server key, timeout, request limits", "tag": "PLANNED",
+      "pos": [500, 70], "size": [270, 100],
+      "sources": [{ "path": "docs/agent-workflow.md", "line": 18, "label": "Planned server request boundary" }]
+    },
+    {
+      "id": "language-interpreter", "type": "external", "label": "Language interpreter",
+      "sublabel": "PLANNED · Extract quantities, not arithmetic", "tag": "PLANNED · MODEL",
+      "pos": [960, 70], "size": [270, 100],
+      "sources": [{ "path": "docs/agent-workflow.md", "line": 19, "label": "Planned interpretation, not arithmetic" }]
+    },
+    {
+      "id": "typed-validator", "type": "security", "label": "Typed validation + SI units",
+      "sublabel": "BUILT CORE · Problem adapter remains planned", "tag": "BUILT CORE · ADAPTER PLANNED",
+      "pos": [960, 300], "size": [270, 100],
+      "sources": [
+        { "path": "src/experiment.ts", "line": 10, "end_line": 21, "label": "Dimension-aware SI conversion" },
+        { "path": "src/experiment.ts", "line": 46, "end_line": 54, "label": "Complete validation, no partial writes" },
+        { "path": "docs/agent-workflow.md", "line": 20, "label": "Planned problem adapter and clarification" }
+      ]
+    },
+    {
+      "id": "physics-solver", "type": "backend", "label": "Deterministic physics solver",
+      "sublabel": "BUILT · Force, motion, power, work and time", "tag": "BUILT · BROWSER CODE",
+      "pos": [500, 300], "size": [270, 100],
+      "sources": [{ "path": "src/physics.ts", "line": 10, "end_line": 27, "label": "Solver-derived measurements" }]
+    },
+    {
+      "id": "atomic-apply", "type": "frontend", "label": "Atomic experiment apply",
+      "sublabel": "BUILT · Agent caller planned; start paused", "tag": "BUILT · AGENT CALLER PLANNED",
+      "pos": [40, 300], "size": [270, 100],
+      "sources": [{ "path": "src/store.ts", "line": 49, "end_line": 54, "label": "Validate before one Zustand update" }]
+    },
+    {
+      "id": "machine-canvas", "type": "frontend", "label": "Interactive machine canvas",
+      "sublabel": "BUILT · Geometry, selection and measurements", "tag": "BUILT · REACT THREE FIBER",
+      "pos": [40, 530], "size": [270, 100],
+      "sources": [
+        { "path": "src/scene/LabStage.tsx", "line": 12, "end_line": 32, "label": "Frame parameter-dependent geometry" },
+        { "path": "src/physics.ts", "line": 30, "end_line": 47, "label": "Shared lever and pulley kinematics" },
+        { "path": "docs/agent-workflow.md", "line": 23, "label": "Implemented canvas, planned overlays" }
+      ]
+    },
+    {
+      "id": "explanation-history", "type": "frontend", "label": "Answer reveal + follow-ups",
+      "sublabel": "PLANNED · Solver equations, snapshots, undo", "tag": "PLANNED",
+      "pos": [500, 530], "size": [270, 100],
+      "sources": [{ "path": "docs/agent-workflow.md", "line": 24, "label": "Planned explanations and history" }]
+    }
+  ],
+  "connections": [
+    { "id": "submit-problem", "from": "problem-ui", "to": "request-endpoint", "label": "HTTPS + context", "variant": "emphasis" },
+    { "id": "bounded-model-call", "from": "request-endpoint", "to": "language-interpreter", "label": "Bounded request", "variant": "emphasis" },
+    { "id": "interpret-quantities", "from": "language-interpreter", "to": "typed-validator", "label": "Untrusted quantities", "variant": "emphasis" },
+    { "id": "valid-configuration", "from": "typed-validator", "to": "physics-solver", "label": "Valid + complete only", "variant": "emphasis" },
+    { "id": "solved-experiment", "from": "physics-solver", "to": "atomic-apply", "label": "Verified configuration", "variant": "emphasis" },
+    { "id": "apply-to-canvas", "from": "atomic-apply", "to": "machine-canvas", "label": "One state update", "variant": "emphasis" },
+    { "id": "explain-results", "from": "machine-canvas", "to": "explanation-history", "label": "Computed results", "variant": "dashed" },
+    { "id": "clarify-invalid", "from": "typed-validator", "to": "problem-ui", "label": "Missing / conflicting: ask user", "variant": "security", "fromSide": "right", "toSide": "top" },
+    { "id": "request-failed", "from": "request-endpoint", "to": "problem-ui", "label": "Failure: keep scene", "variant": "dashed", "fromSide": "top", "toSide": "right" }
+  ],
+  "cards": [
+    { "dot": "emerald", "title": "Phase one is ready", "items": ["Manual controls and typed settings already drive both machines.", "Gravity defaults to 9.8 m/s² and can be overridden.", "Validation preserves the existing scene when a setup is invalid."] },
+    { "dot": "violet", "title": "One bounded interpreter, not a swarm", "items": ["The model interprets language; deterministic code owns arithmetic and meshes.", "No AI input, endpoint, credential or model call is implemented yet.", "Keep given, assumed and calculated quantities separate."] },
+    { "dot": "amber", "title": "Example and model limits", "items": ["12 kg, arms 0.5 / 1.5 m, g = 9.8 → 3× advantage and 39.2 N effort.", "Visual defaults are illustrative motion, not invented problem givens.", "Quasi-static model: no force-driven acceleration, elastic rope or contact solver."] }
+  ]
+}

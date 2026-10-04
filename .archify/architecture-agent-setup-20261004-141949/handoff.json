@@ -1,0 +1,23 @@
+{
+  "diagram_type": "architecture",
+  "output": "/Users/sumeetsouravdas/AI/MachinePlayground/.archify/architecture-agent-setup-20261004-141949/agent-setup.html",
+  "specification_sha256": "6bbbc45dcd3d4f3ec575cdbe07948cf582a280d075f09243c6df65fee95369fa",
+  "artifact_sha256": "4516ee755435bfc90bfb6532f288979fc536f19a8e6a649274c648046abe146d",
+  "validation": "9/9 showcase, 0 errors, 0 warnings",
+  "browser_evidence": "passed",
+  "visual_review": "passed",
+  "correction_rounds": 1,
+  "finalize_receipt": "review-1/agent-setup.finalize-summary.json",
+  "browser_receipt": "review-1/agent-setup.browser-check.json",
+  "perceptual_review": {
+    "artifact_sha256": "4516ee755435bfc90bfb6532f288979fc536f19a8e6a649274c648046abe146d",
+    "capture_receipt": "review-1/agent-setup.visual-check.json",
+    "scope": "Default READ view, 1440x900 and 2048x1320, light and dark themes",
+    "observations": [
+      "Built and planned status is visible in each node sublabel.",
+      "The main path, clarification return and request-failure return are readable without crossings.",
+      "Cards fit at the large viewport; the smaller viewport uses readable page-level scrolling.",
+      "This review covers captured composition, not independent interaction or export testing."
+    ]
+  }
+}

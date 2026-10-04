@@ -1,0 +1,2 @@
+# Preserve the byte-verified generated viewer; source files retain whitespace checks.
+.archify/architecture-agent-setup-20261004-141949/agent-setup.html whitespace=-blank-at-eol linguist-generated=true
