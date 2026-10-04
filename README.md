@@ -73,7 +73,19 @@ Run `npm run build` and deploy `dist/` to any static host (Vercel, Netlify, Clou
 
 Static hosting supplies manual mode and examples only. To enable free-form AI problems, run `npm run api` as a Node service (defaults to loopback port 3001) and reverse-proxy `/api/agent/*` from the **same origin** to it. Use deployment secrets or `.env.local`. `npm run preview` already proxies those API paths to that local service; start both commands to test a production bundle. The service does not host static files. HTTPS, authentication, shared quotas, process supervision, and a provider budget remain deployment responsibilities. API routes currently assume hosting at the origin root.
 
-This repository does not automatically deploy or require a hosting account.
+### GitHub Pages demo
+
+The public demo is hosted at https://sumeetsdas.github.io/MachinePlayground/ from the dedicated `feat/github-pages-demo` branch. Pushes to that branch run `.github/workflows/pages.yml`: unit/server tests, a Pages build, desktop/mobile static-bundle browser tests, then deployment of **only `dist/`**. `main` remains the baseline and `feat/problem-to-scene-agent` retains the agent implementation separately.
+
+```sh
+npm run build:pages
+npm run test:pages
+npm run preview:pages
+```
+
+Pages mode uses `/MachinePlayground/` for assets and the favicon. It labels the demo as local-only, hides free-form input, and makes no interpreter requests. Both machines, physics controls, prepared problems, answer reveal and undo work without server credentials. Ordinary `npm run build` and local development still support the server-backed workflow.
+
+GitHub Settings → Pages uses **GitHub Actions**. The `github-pages` environment must permit the demo branch. The repository and website are public; do not commit secrets. No OpenAI key is used in the Pages workflow. To promote the demo later, merge the reviewed changes and update the workflow's publishing branch deliberately.
 
 ## Git hooks
 

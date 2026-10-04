@@ -2,14 +2,12 @@ import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
   testDir: './tests',
-  testMatch: '**/*.e2e.ts',
-  testIgnore: '**/pages.e2e.ts',
-  outputDir: 'test-results/browser',
-  fullyParallel: false,
+  testMatch: '**/pages.e2e.ts',
+  outputDir: 'test-results/pages',
   workers: 1,
   timeout: 30000,
   use: {
-    baseURL: 'http://localhost:5173',
+    baseURL: process.env.PAGES_TEST_URL || 'http://127.0.0.1:4173/MachinePlayground/',
     viewport: { width: 1440, height: 1100 },
     screenshot: 'only-on-failure',
     trace: 'retain-on-failure',
@@ -17,9 +15,9 @@ export default defineConfig({
       executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH,
     } : undefined,
   },
-  webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:5173',
-    reuseExistingServer: !process.env.CI,
+  webServer: process.env.PAGES_TEST_URL ? undefined : {
+    command: 'npm run preview:pages',
+    url: 'http://127.0.0.1:4173/MachinePlayground/',
+    reuseExistingServer: false,
   },
 });

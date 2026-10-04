@@ -4,6 +4,7 @@ import type { MachineId, PartId, Settings } from './machines';
 import { resolveExperiment } from './experiment';
 import { compileProblem, interpretationSchema } from './agent/problem';
 import type { CompiledProblem, Interpretation } from './agent/problem';
+import { STATIC_DEMO } from './runtime';
 
 interface ProblemSession { text: string; source: 'ai' | 'example'; result: CompiledProblem }
 interface Snapshot { machine: MachineId | null; settings: Record<MachineId, Settings>; selected: PartId | null; running: boolean; problem: ProblemSession | null; context: Interpretation | null; revealed: boolean; draft: string }
@@ -59,6 +60,10 @@ export const useLab = create<LabState>((set, get) => ({
   problem: null, problemContext: null, problemStatus: 'idle', problemMessage: null, problemDraft: '', problemRevealed: false, history: [], requestId: 0,
   setProblemDraft: problemDraft => set({ problemDraft }),
   submitProblem: async () => {
+    if (STATIC_DEMO) {
+      set({ problemStatus: 'error', problemMessage: 'This demo runs locally prepared examples only. Free-form AI problems require a server.' });
+      return;
+    }
     const before = get();
     const text = before.problemDraft.trim();
     if (!text || text.length > 2000) { set({ problemStatus: 'error', problemMessage: 'Enter a problem of 1–2000 characters.' }); return; }

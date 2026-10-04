@@ -5,6 +5,7 @@ import { createAgentHandler } from './server/api';
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), 'OPENAI_');
   return {
+    base: mode === 'pages' ? '/MachinePlayground/' : '/',
     plugins: [react(), {
       name: 'machine-agent-api',
       configureServer(server) {
@@ -12,6 +13,6 @@ export default defineConfig(({ mode }) => {
         server.middlewares.use('/api/agent', (req, res) => { req.url = `/api/agent${req.url}`; void handler(req, res); });
       },
     }],
-    preview: { proxy: { '/api/agent': 'http://127.0.0.1:3001' } },
+    preview: { proxy: mode === 'pages' ? undefined : { '/api/agent': 'http://127.0.0.1:3001' } },
   };
 });
