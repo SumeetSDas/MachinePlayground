@@ -1,0 +1,14 @@
+#!/bin/sh
+set -eu
+subject=$(sed -n '1p' "$1")
+if ! printf '%s\n' "$subject" | LC_ALL=C grep -Eq '^((feat|fix)!?|(perf|refactor|docs|test|chore)): .+'; then
+  printf '%s\n' 'Use a commit subject in the form <type>: <description>.' >&2
+  exit 1
+fi
+if [ "${#subject}" -gt 72 ]; then
+  printf '%s\n' 'Commit subject must be 72 characters or fewer.' >&2
+  exit 1
+fi
+case "$subject" in
+  *.) printf '%s\n' 'Commit subject must not end with a period.' >&2; exit 1 ;;
+esac
