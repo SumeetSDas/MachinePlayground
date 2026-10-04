@@ -32,6 +32,8 @@ npm run preview
 - Orbit and zoom, pause/play, reset (including camera), and fullscreen where supported.
 - Three experiments per machine, with feedback and progress saved locally. Storage failures are handled.
 - A WebGL error fallback that keeps controls and educational content available.
+- A word-problem box in the library and labs, with a server-side AI interpreter, clarification and follow-up support, SI validation, solver-derived answers, scene annotations, and ten-step in-memory undo history.
+- Labelled prepared examples that run locally without an AI call. Unknowns start hidden for prediction and can be revealed. Manual changes clear the old problem result so answers do not become stale.
 
 Space pauses/resumes when focus is outside a control. Escape clears part selection. Sliders work with arrow keys. Part picker buttons mirror canvas selection.
 
@@ -47,7 +49,15 @@ Friction defaults to 80% efficiency and can be changed: `effort = weight / (MA �
 
 Mass (kg) and weight (N) are explicitly distinct. In mass mode, changing gravity preserves mass; in weight mode it preserves the entered force and recalculates mass. SI conversion and validated atomic configuration application are available in `src/experiment.ts` and `src/store.ts`. Invalid parameters never partially modify an experiment or silently clamp its values.
 
-The proposed problem-to-scene agent workflow is documented in `docs/agent-workflow.md`. Phase one supplies its physics foundation; the text input and model endpoint have not been implemented.
+The problem-to-scene workflow and its supported scope are documented in `docs/agent-workflow.md`.
+
+## Connect the AI interpreter
+
+Manual exploration and prepared examples need no account or key. Free-form problems and follow-ups require an OpenAI API key configured **only on the server**. Copy `.env.example` to an untracked `.env.local`, set `OPENAI_API_KEY`, optionally set `OPENAI_MODEL` (default `gpt-4o-mini`), and restart `npm run dev`. Never use a `VITE_` variable for secrets. Do not paste credentials into the problem input.
+
+The Vite development server handles `/api/agent/status` and `/api/agent/interpret`. The interpreter uses the Responses API with a strict JSON schema, no tools, no retries, a 20-second provider timeout, 2048 output tokens, and `store: false`. Treat extracted data as untrusted: code checks units, required givens and renderable limits, then computes the answer. Model failure, cancellation, missing givens, conflicts, or stale responses do not replace the current scene. “New problem” clears context; follow-ups otherwise include the previous extraction, not arbitrary manual settings.
+
+The gateway rejects cross-origin browser requests, bodies over 12 KB, and problems over 2000 characters. It permits at most eight requests per client per minute, 100 globally per minute, and three concurrent model requests per process. These local guardrails are not a production authentication or distributed quota system. Configure provider spend limits, edge authentication, and shared rate limits before public deployment. Word problems are transmitted to OpenAI; no personal data is needed.
 
 ## Architecture and expansion
 
@@ -55,11 +65,13 @@ Vite, React, TypeScript, Three.js, React Three Fiber, Drei, Zustand, and Vitest.
 
 To add another machine, extend the machine ID and registry, add settings/calculations and challenges, and provide a scene through `LabStage`. Reuse `SelectablePart`, controls, measurements, and the inspector. Gears and inclined planes are natural next additions.
 
-Fonts are bundled locally through Fontsource, with system fallbacks. All illustrations, models, fonts, and icons are supplied by the app and its dependencies. No external asset requests, API keys, backend, or account required.
+Fonts are bundled locally through Fontsource, with system fallbacks. All illustrations, models, fonts, and icons are supplied by the app and its dependencies. No external assets are fetched. Only the optional AI interpreter requires a server and account.
 
 ## Publish
 
 Run `npm run build` and deploy `dist/` to any static host (Vercel, Netlify, Cloudflare Pages, etc.). Build command: `npm run build`. Output directory: `dist`. No client-side URL routing or server rewrites are required. For hosting under a subpath, configure Vite’s `base` and adjust the favicon path accordingly.
+
+Static hosting supplies manual mode and examples only. To enable free-form AI problems, run `npm run api` as a Node service (defaults to loopback port 3001) and reverse-proxy `/api/agent/*` from the **same origin** to it. Use deployment secrets or `.env.local`. `npm run preview` already proxies those API paths to that local service; start both commands to test a production bundle. The service does not host static files. HTTPS, authentication, shared quotas, process supervision, and a provider budget remain deployment responsibilities. API routes currently assume hosting at the origin root.
 
 This repository does not automatically deploy or require a hosting account.
 

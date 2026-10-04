@@ -4,6 +4,7 @@ import { challenges } from './physics';
 import { useLab } from './store';
 import { SiteHeader } from './components/Brand';
 import MachineIllustration from './components/MachineIllustration';
+import ProblemPanel from './components/ProblemPanel';
 
 export default function Library() {
   const open = useLab(s => s.open);
@@ -60,6 +61,7 @@ export default function Library() {
         </div>
       </section>
 
+      <ProblemPanel />
       <section className="how-it-works" aria-label="How to explore">
         <div className="how-intro"><span className="eyebrow muted">A GOOD WAY TO PLAY</span><h2>Wonder.<br /><span className="serif-italic">Then find out.</span></h2></div>
         <div className="how-step"><span className="step-icon"><MousePointer2 size={21} /></span><h3>Get a closer look</h3><p>Tap any part to see what it is and why it matters.</p></div>

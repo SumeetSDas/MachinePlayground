@@ -8,9 +8,10 @@ const Highlight = createContext(false);
 
 export function SelectablePart({ id, children, ...props }: { id: PartId; children: ReactNode } & Omit<ThreeElements['group'], 'id' | 'children'>) {
   const selected = useLab(s => s.selected === id);
+  const problemTarget = useLab(s => s.problem?.result.highlight === id);
   const [hover, setHover] = useState(false);
   return <group {...props} onClick={event => { event.stopPropagation(); useLab.getState().select(id); }} onPointerOver={event => { event.stopPropagation(); setHover(true); document.body.style.cursor = 'pointer'; }} onPointerOut={() => { setHover(false); document.body.style.cursor = ''; }}>
-    <Highlight.Provider value={selected || hover}>{children}</Highlight.Provider>
+    <Highlight.Provider value={selected || hover || problemTarget}>{children}</Highlight.Provider>
   </group>;
 }
 

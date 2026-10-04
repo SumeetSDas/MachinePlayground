@@ -9,6 +9,7 @@ import PartSidecar from './components/PartSidecar';
 import Measurements from './components/Measurements';
 import ChallengePanel from './components/ChallengePanel';
 import LabStage from './scene/LabStage';
+import ProblemPanel from './components/ProblemPanel';
 
 export default function MachineLab({ machineId }: { machineId: MachineId }) {
   const machine = machines.find(m => m.id === machineId)!;
@@ -58,9 +59,11 @@ export default function MachineLab({ machineId }: { machineId: MachineId }) {
     <SiteHeader lab />
     <main className="lab-main">
       <div className="lab-title-row"><div><div className="eyebrow muted">EXPERIMENT {machine.number} <span className="eyebrow-divider">/</span> {machine.concept.toUpperCase()}</div><h1>{machine.title}<span className="serif-italic">{machine.subtitle}</span></h1></div><button className="text-button switch-machine" onClick={() => useLab.getState().open(machineId === 'lever' ? 'pulley' : 'lever')}>Try the {machineId === 'lever' ? 'pulley' : 'lever'} <ArrowRight size={16} /></button></div>
+      <ProblemPanel />
       <div ref={stageRef} className={`scene-stage scene-with-controls ${controlsOpen ? 'controls-open' : ''}`}>
         <div className="stage-viewport"><LabStage machine={machineId} /></div>
         <div className="stage-top"><span className={`operation-status ${running ? '' : 'paused'}`}><span className="status-dot" /> {running ? 'IN MOTION' : 'PAUSED'}</span><span className="stage-mode">{friction ? 'WITH FRICTION' : 'IDEAL MACHINE'}</span></div>
+        <ProblemOverlay />
         <CanvasControls machine={machineId} expanded={controlsOpen} onToggle={() => setControlsOpen(open => !open)} />
         <div className="stage-bottom"><span className="stage-instruction"><Move size={14} /> Drag to look around <i /> Tap a part to explore</span><div className="playback-controls"><button className="icon-button" aria-label={running ? 'Pause simulation' : 'Play simulation'} title={running ? 'Pause (space)' : 'Play (space)'} onClick={toggle}>{running ? <Pause size={17} /> : <Play size={17} />}</button><button className="icon-button" aria-label="Reset experiment and camera" title="Reset experiment and camera" onClick={reset}><RotateCcw size={17} /></button><button className="icon-button fullscreen-button" aria-label="Expand 3D view" title="Expand 3D view" onClick={() => {
             const stage = stageRef.current;
@@ -79,4 +82,11 @@ export default function MachineLab({ machineId }: { machineId: MachineId }) {
     </main>
     <footer className="lab-footer"><span>Keep asking “what if?”</span><span>Every great idea starts with a little experiment. <span className="footer-mark">✳</span></span></footer>
   </div>;
+}
+
+function ProblemOverlay() {
+  const problem = useLab(s => s.problem);
+  const revealed = useLab(s => s.problemRevealed);
+  if (!problem) return null;
+  return <div className="problem-overlay"><span>PROBLEM SETUP · {problem.result.configuration.machine.toUpperCase()}</span><strong>{problem.result.answer.label}: {revealed ? `${Number(problem.result.answer.value.toPrecision(6))} ${problem.result.answer.unit}` : '?'}</strong><button onClick={() => useLab.getState().select(problem.result.highlight)}>Highlight the {problem.result.highlight === 'effort' ? 'effort pad' : problem.result.highlight}</button></div>;
 }

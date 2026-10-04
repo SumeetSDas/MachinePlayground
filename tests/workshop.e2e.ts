@@ -175,9 +175,14 @@ test('mobile controls are tucked away and the open tray leaves the machine visib
   await expect(toggle).toHaveAttribute('aria-expanded', 'true');
   await expect.poll(async () => (await page.locator('canvas').boundingBox())!.height).toBeGreaterThan(250);
   const canvas = (await page.locator('canvas').boundingBox())!;
-  const panel = (await page.locator('.canvas-controls').boundingBox())!;
   expect(canvas.height).toBeGreaterThan(250);
-  expect(canvas.y + canvas.height).toBeLessThanOrEqual(panel.y + 10);
+  // ResizeObserver and browser auto-scroll can settle after the tray opens.
+  // Measure both rectangles together instead of mixing scroll positions.
+  await expect.poll(() => page.evaluate(() => {
+    const canvasBounds = document.querySelector('canvas')!.getBoundingClientRect();
+    const panelBounds = document.querySelector('.canvas-controls')!.getBoundingClientRect();
+    return canvasBounds.bottom <= panelBounds.top + 10;
+  })).toBe(true);
   await page.getByRole('button', { name: 'Add a moving wheel' }).click();
   await page.getByRole('switch', { name: 'Add a little friction' }).click();
   await expect(page.locator('.measurement-grid > div').nth(0)).toContainText('61.3');

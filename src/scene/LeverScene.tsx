@@ -8,6 +8,7 @@ import SceneLabel from './SceneLabel';
 
 export default function LeverScene() {
   const settings = useLab(s => s.settings.lever);
+  const hidden = useLab(s => s.problem && !s.problemRevealed ? s.problem.result.interpretation.unknown : null);
   const beam = useRef<Group>(null);
   const time = useRef(0);
   const lastReset = useRef(-1);
@@ -56,7 +57,7 @@ export default function LeverScene() {
       <SceneLabel position={[result.effortArm / 2, -0.18, 0.28]} lines={['EFFORT ARM', `${result.effortArm.toFixed(2)} m`]} width={Math.min(0.65, result.effortArm * 0.9)} />
     </group>
     <SceneLabel position={[pivotX, 0.32, 0.45]} lines={['FULCRUM']} width={0.46} color="#e9e7cf" />
-    <SceneLabel position={[-result.beamLength / 2, pivotY + settings.liftDistance + 0.9, 0]} lines={['LOAD', `${result.weight.toFixed(1)} N`]} />
-    <SceneLabel position={[result.beamLength / 2, pivotY + 1, 0]} lines={['EFFORT', `${result.effort.toFixed(1)} N`]} />
+    <SceneLabel position={[-result.beamLength / 2, pivotY + settings.liftDistance + 0.9, 0]} lines={['LOAD', hidden === 'weight' ? '? N' : `${result.weight.toFixed(1)} N`]} />
+    <SceneLabel position={[result.beamLength / 2, pivotY + 1, 0]} lines={['EFFORT', hidden === 'effort' ? '? N' : `${result.effort.toFixed(1)} N`]} />
   </group>;
 }
